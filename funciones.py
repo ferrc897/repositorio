@@ -1,0 +1,6 @@
+def dos_jugadores():
+    ...
+
+
+def un_jugador():
+    ...
