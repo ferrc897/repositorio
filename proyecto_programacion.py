@@ -4,13 +4,15 @@ def main():
     while True:
         print("1 Jugador")
         print("2 Jugadores")
-        no_jugadores = int(input("Cuántos jugadores van a jugar (Escriba 1/2)"))
+        no_jugadores = int(input("Cuántos jugadores van a jugar (Escriba 1 o 2)"))
         if no_jugadores == 1:
-            un_jugador()
+            ganador = un_jugador()
         elif no_jugadores == 2:
-            dos_jugadores()
+            ganador = dos_jugadores()
         else:
             pass
+        print(ganador)
+        break
 
 
 if __name__ == "__main__":
