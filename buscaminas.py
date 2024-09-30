@@ -13,7 +13,8 @@ class Bloque:
         if self.show and self.bomb:
             return "💣"
         if self.show and self.no_bomba > 0:
-            return str(self.no_bomba)
+            numeros = ["1️⃣ ", "2️⃣ ", "3️⃣ ", "4️⃣ ", "5️⃣ ", "6️⃣ ", "7️⃣ ", "8️⃣ "]
+            return numeros[self.no_bomba - 1]
         if self.show:
             return "🟫"
 
@@ -24,6 +25,7 @@ def main():
     tablero = crear_tablero()
     while True:
         tablero = movimiento(tablero)
+        """
         if perder(tablero):
             for i in range(ALTURA_TABLERO):
                     for j in range(ANCHO_TABLERO):
@@ -32,6 +34,7 @@ def main():
             dibujar_tablero(tablero)
             print("Perdiste :(")
             break
+        """
 
 
 def crear_tablero():
@@ -46,13 +49,17 @@ def crear_tablero():
 
 def movimiento(tablero):
     dibujar_tablero(tablero)
-    coord = input("Escriba una coordenada: ")
-    x , y = convertirCoord(coord)
-    tablero[y][x].show = True
+    while True:
+        try:
+            coord = input("Escriba una coordenada: ")
+            x , y = convertirCoord(coord)
+            tablero[y][x].no_bomb = contar_bombas(tablero, x, y)
+            tablero[y][x].show = True
+            break
+        except (IndexError, ValueError):
+            pass
     if primerMovimiento(tablero):
         return(setGame(tablero))
-    else:
-        tablero[y][x].no_bomb = contar_bombas(tablero, x, y)
     return tablero
 
 
@@ -84,6 +91,7 @@ def setGame(tablero):
             except ValueError:
                 pass
         tablero[y][x].bomb = True
+        tablero[y][x].show = True
     return tablero
 
 
@@ -133,19 +141,19 @@ def contar_bombas(tablero, y, x):
     count = 0
     for i in range(-1, 1):
         try:
-            if tablero[y - 1][x + i].show:
+            if tablero[y - 1][x + i].bomb:
                 count += 1
         except IndexError:
             pass
-    for i in range(-1, 1, 2):
+    for i in range(-1, 1,):
         try:
-            if tablero[y][x + i].show:
+            if tablero[y][x + i].bomb:
                 count += 1
         except IndexError:
             pass
     for i in range(-1, 1):
         try:
-            if tablero[y + 1][x + i].show:
+            if tablero[y + 1][x + i].bomb:
                 count += 1
         except IndexError:
             pass
