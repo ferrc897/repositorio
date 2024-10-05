@@ -10,22 +10,25 @@ class Bloque:
     def __str__(self):
         if not(self.show):
             return "🟩"
+        if self.flag:
+            return "🚩"
         if self.show and self.bomb:
             return "💣"
-        if self.show and self.no_bomba > 0:
+        if self.show and self.no_bomba > 0 and not(self.bomb):
             numeros = ["1️⃣ ", "2️⃣ ", "3️⃣ ", "4️⃣ ", "5️⃣ ", "6️⃣ ", "7️⃣ ", "8️⃣ "]
             return numeros[self.no_bomba - 1]
         if self.show:
             return "🟫"
 
+
 ALTURA_TABLERO = 9
 ANCHO_TABLERO = 9
+BOMBAS = 10
 
 def main():
     tablero = crear_tablero()
     while True:
         tablero = movimiento(tablero)
-        """
         if perder(tablero):
             for i in range(ALTURA_TABLERO):
                     for j in range(ANCHO_TABLERO):
@@ -34,7 +37,6 @@ def main():
             dibujar_tablero(tablero)
             print("Perdiste :(")
             break
-        """
 
 
 def crear_tablero():
@@ -50,16 +52,34 @@ def crear_tablero():
 def movimiento(tablero):
     dibujar_tablero(tablero)
     while True:
+        if primerMovimiento(tablero):
+            modo = 1
+            break
+        try:
+            print("Colocar bandera o revelar?")
+            print("1. Revelar")
+            print("2. Bandera")
+            modo = int(input())
+            if modo < 1 or modo > 2:
+                raise ValueError
+            break
+        except ValueError:
+            pass
+    while True:
         try:
             coord = input("Escriba una coordenada: ")
             x , y = convertirCoord(coord)
-            tablero[y][x].no_bomb = contar_bombas(tablero, x, y)
-            tablero[y][x].show = True
+            if modo == 1:
+                tablero[y][x].show = True
+            else:
+                tablero[y][x].flag = True
             break
         except (IndexError, ValueError):
             pass
+    tablero[y][x].no_bomba = contar_bombas(x,y,tablero)
     if primerMovimiento(tablero):
-        return(setGame(tablero))
+        tablero = setGame(tablero)
+    tablero = revelar_bloques(tablero,x,y)
     return tablero
 
 
@@ -77,7 +97,7 @@ def primerMovimiento(tablero):
     
 
 def setGame(tablero):
-    for i in range(10):
+    for i in range(BOMBAS):
         while True:
             try:
                 x = random.randint(0, ANCHO_TABLERO - 1)
@@ -91,7 +111,6 @@ def setGame(tablero):
             except ValueError:
                 pass
         tablero[y][x].bomb = True
-        tablero[y][x].show = True
     return tablero
 
 
@@ -137,36 +156,68 @@ def revelado(tablero, x, y):
     return False
 
 
-def contar_bombas(tablero, y, x):
+def contar_bombas(x,y,tablero):
     count = 0
-    for i in range(-1, 1):
-        try:
-            if tablero[y - 1][x + i].bomb:
-                count += 1
-        except IndexError:
-            pass
-    for i in range(-1, 1,):
-        try:
-            if tablero[y][x + i].bomb:
-                count += 1
-        except IndexError:
-            pass
-    for i in range(-1, 1):
-        try:
-            if tablero[y + 1][x + i].bomb:
-                count += 1
-        except IndexError:
-            pass
-    if not(tablero[y][x].bomb):
-        tablero[y][x].no_bomba = count
-    return tablero[y][x].no_bomba
+    for i in range(-1,2):
+        for j in range(-1,2):
+            try:
+                if y+i < 0 or x+j < 0:
+                    raise ValueError
+                if tablero[y+i][x+j].bomb:
+                    count += 1
+            except(ValueError, IndexError):
+                pass
+    return count
 
+            
 
 def perder(tablero):
     for i in range(ALTURA_TABLERO):
         for j in range(ANCHO_TABLERO):
             if tablero[i][j].bomb and tablero[i][j].show:
                 return True
+
+
+def revelar_bloques(tablero, x, y):
+    if tablero[y][x].no_bomba == 0:
+        for i in range(y, ALTURA_TABLERO):
+            for j in range(x,ANCHO_TABLERO):
+                tablero[i][j].show = True
+                tablero[i][j].no_bomba = contar_bombas(j,i,tablero)
+                if tablero[i][j].no_bomba > 0:
+                    break
+            if tablero[i][0].no_bomba > 0:
+                break
+        
+        for j in range(x,ANCHO_TABLERO):
+            for i in range(y,ALTURA_TABLERO):
+                tablero[i][j].show = True
+                tablero[i][j].no_bomba = contar_bombas(j,i,tablero)
+                if tablero[i][j].no_bomba > 0:
+                    break
+            if tablero[0][j].no_bomba > 0:
+                break
+
+        for i in range(y, 0,-1):
+            for j in range(x,ANCHO_TABLERO):
+                tablero[i][j].show = True
+                tablero[i][j].no_bomba = contar_bombas(j,i,tablero)
+                if tablero[i][j].no_bomba > 0:
+                    break
+            if tablero[i][0].no_bomba > 0:
+                break
+        
+        for j in range(x,0,-1):
+            for i in range(y,ALTURA_TABLERO):
+                tablero[i][j].show = True
+                tablero[i][j].no_bomba = contar_bombas(j,i,tablero)
+                if tablero[i][j].no_bomba > 0:
+                    break
+            if tablero[0][j].no_bomba > 0:
+                break
+    return tablero
+
+
 
 if __name__ == "__main__":
     main()
